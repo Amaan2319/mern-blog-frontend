@@ -19,7 +19,7 @@ const Navbar = () => {
       {/* Left */}
       <div className="flex-1">
         <Link to="/" className="btn btn-ghost normal-case text-xl">
-          MyBlog
+          BlogBook
         </Link>
       </div>
 
