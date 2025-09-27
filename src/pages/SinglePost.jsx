@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-const API_URL = "https://mern-blog-9xkb.onrender.com/api";
+const API_URL = "https://mern-blog-9xkb.onrender.com/api/auth";
 
 const SinglePost = () => {
   const { id } = useParams();
@@ -13,12 +13,9 @@ const SinglePost = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
-      const token = localStorage.getItem("token");
       try {
         setStatus("loading");
-        const res = await axios.get(`${API_URL}/posts/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await axios.get(`${API_URL}/posts/${id}`);
         setPost(res.data);
         setStatus("succeeded");
       } catch (err) {
@@ -26,6 +23,7 @@ const SinglePost = () => {
         setStatus("failed");
       }
     };
+
     fetchPost();
   }, [id]);
 
@@ -43,11 +41,6 @@ const SinglePost = () => {
             <div className="card-body">
               <h2 className="card-title">Unable to load post</h2>
               <p className="text-error">{error}</p>
-              {error.toLowerCase().includes("unauthorized") && (
-                <Link to="/login" className="btn btn-primary mt-3">
-                  Login to view
-                </Link>
-              )}
               <button onClick={() => navigate(-1)} className="btn mt-3">
                 Go Back
               </button>

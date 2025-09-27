@@ -46,9 +46,7 @@ function App() {
           <Route
             path="posts/:id"
             element={
-              <PrivateRoute>
                 <SinglePost />
-              </PrivateRoute>
             }
           />
           <Route
