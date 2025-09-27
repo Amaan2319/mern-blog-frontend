@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-const API_URL = "https://mern-blog-9xkb.onrender.com/api/auth";
+const API_URL = "https://mern-blog-9xkb.onrender.com/api";
 
 const SinglePost = () => {
   const { id } = useParams();
