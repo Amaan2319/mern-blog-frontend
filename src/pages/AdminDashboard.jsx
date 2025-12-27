@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 
 const AdminDashboard = () => {
+  
   const { user, token } = useSelector((state) => state.auth);
 
   const [users, setUsers] = useState([]);
@@ -12,6 +13,12 @@ const AdminDashboard = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState("");
+useEffect(() => {
+  if (!user || user.role !== "admin") {
+    navigate("/");
+  }
+}, [user, navigate]);
+
 
   useEffect(() => {
     const fetchData = async () => {

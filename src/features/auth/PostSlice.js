@@ -1,197 +1,174 @@
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import axios from "axios";
-
-// const API_URL = "http://localhost:5000/api";
-
-// export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-//   const res = await axios.get(`${API_URL}/posts`);
-//   return res.data;
-// });
-
-// export const createPost = createAsyncThunk("posts/createPost", async ({ title, content, token }) => {
-//   const res = await axios.post(`${API_URL}/posts`, { title, content }, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   });
-//   return res.data;
-// });
-
-// const postsSlice = createSlice({
-//   name: "posts",
-//   initialState: {
-//     posts: [],
-//     status: "idle",
-//     error: null,
-//   },
-//   reducers: {},
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(fetchPosts.pending, (state) => { state.status = "loading"; })
-//       .addCase(fetchPosts.fulfilled, (state, action) => { state.status = "succeeded"; state.posts = action.payload; })
-//       .addCase(fetchPosts.rejected, (state, action) => { state.status = "failed"; state.error = action.error.message; });
-//   },
-// });
-
-// export default postsSlice.reducer;
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const API_URL = "https://mern-blog-9xkb.onrender.com/api";
 
-// Fetch all posts from the backend
+const initialState = {
+  allPosts: [],
+  userPosts: [],
+  singlePost: null,
+  status: "idle",
+  error: null,
+};
+
+// 🔓 Public feed
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
   const res = await axios.get(`${API_URL}/posts`);
   return res.data;
 });
 
-// Create a new post and send it to the backend
-export const createPost = createAsyncThunk(
-  "posts/createPost",
-  async ({ title, content, token }, thunkAPI) => {
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const res = await axios.post(`${API_URL}/posts`, { title, content }, config);
-      return res.data;
-    } catch (error) {
-      const message =
-        (error.response && error.response.data && error.response.data.message) ||
-        error.message ||
-        error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-
-// Fetch posts specifically for the logged-in user's dashboard
+// 🔐 User dashboard posts
 export const fetchUserPosts = createAsyncThunk(
   "posts/fetchUserPosts",
   async (_, thunkAPI) => {
     try {
-      const { token } = thunkAPI.getState().auth;
-      const res = await axios.get(`${API_URL}/posts/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("Fetched user posts:", res.data);
-      return res.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
-    }
-  }
-);
+      const token = thunkAPI.getState().auth.token;
 
-// Fetch a single post by ID
-export const fetchSinglePost = createAsyncThunk(
-  "posts/fetchSinglePost",
-  async (postId, thunkAPI) => {
-    try {
-      const { token } = thunkAPI.getState().auth;
-      const res = await axios.get(`${API_URL}/posts/${postId}`, {
+      const res = await axios.get(`${API_URL}/posts/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       return res.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
 
-// Update an existing post on the backend
+// ➕ Create post
+export const createPost = createAsyncThunk(
+  "posts/createPost",
+  async ({ title, content }, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.token;
+
+      const res = await axios.post(
+        `${API_URL}/posts`,
+        { title, content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
+    }
+  }
+);
+
+// ✏️ Update post
 export const updatePost = createAsyncThunk(
   "posts/updatePost",
   async ({ id, postData }, thunkAPI) => {
     try {
-      const { token } = thunkAPI.getState().auth;
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const res = await axios.put(`${API_URL}/posts/${id}`, postData, config);
+      const token = thunkAPI.getState().auth.token;
+      const res = await axios.put(
+        `${API_URL}/posts/${id}`,
+        postData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       return res.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
 
-// Delete a post from the backend
+
+// ❌ Delete post
 export const deletePost = createAsyncThunk(
   "posts/deletePost",
   async (postId, thunkAPI) => {
     try {
-      const { token } = thunkAPI.getState().auth;
+      const token = thunkAPI.getState().auth.token;
+
       await axios.delete(`${API_URL}/posts/${postId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return postId; // Return the ID of the deleted post
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+
+      return postId;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
+    }
+  }
+);
+
+// 🔎 Single post
+export const fetchSinglePost = createAsyncThunk(
+  "posts/fetchSinglePost",
+  async (postId, thunkAPI) => {
+    try {
+      const res = await axios.get(`${API_URL}/posts/${postId}`);
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
 
 const postsSlice = createSlice({
   name: "posts",
-  initialState: {
-    posts: [],
-    status: "idle",
-    error: null,
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Cases for fetchPosts
-      .addCase(fetchPosts.pending, (state) => {
-        state.status = "loading";
+      .addCase(fetchPosts.pending, (s) => { s.status = "loading"; })
+      .addCase(fetchPosts.fulfilled, (s, a) => {
+        s.status = "succeeded";
+        s.allPosts = a.payload;
       })
-      .addCase(fetchPosts.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.posts = action.payload; // Update the posts array with all posts
-        console.log("Fetched posts:", action.payload);
+
+      .addCase(fetchUserPosts.fulfilled, (s, a) => {
+        s.status = "succeeded";
+        s.userPosts = a.payload;
       })
-      .addCase(fetchPosts.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.error.message;
+
+      .addCase(createPost.fulfilled, (s, a) => {
+        s.userPosts.unshift(a.payload);
+        s.allPosts.unshift(a.payload);
       })
-      // Cases for createPost
-      .addCase(createPost.pending, (state) => {
-        state.status = "loading";
+
+      .addCase(updatePost.pending, (s) => {
+        s.status = "loading";
       })
-      .addCase(createPost.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        // The payload from the backend is now a single, populated post object.
-        // We can safely push it directly to the state.
-        state.posts.push(action.payload);
-        console.log("Created post:", action.payload);
+      .addCase(updatePost.fulfilled, (s, a) => {
+        s.status = "succeeded";
+
+        s.userPosts = s.userPosts.map(p =>
+          p._id === a.payload._id ? a.payload : p
+        );
+
+        s.allPosts = s.allPosts.map(p =>
+          p._id === a.payload._id ? a.payload : p
+        );
+
+        s.singlePost = a.payload;
       })
-      .addCase(createPost.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload; // Use action.payload for the rejected value
+      .addCase(updatePost.rejected, (s, a) => {
+        s.status = "failed";
+        s.error = a.payload;
       })
-      // Cases for fetchUserPosts
-      .addCase(fetchUserPosts.pending, (state) => {
-        state.status = "loading";
+
+
+      .addCase(deletePost.fulfilled, (s, a) => {
+        s.userPosts = s.userPosts.filter(p => p._id !== a.payload);
+        s.allPosts = s.allPosts.filter(p => p._id !== a.payload);
       })
-      .addCase(fetchUserPosts.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.posts = action.payload;
-      })
-      .addCase(fetchUserPosts.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-      // Cases for deletePost
-      .addCase(deletePost.fulfilled, (state, action) => {
-        state.posts = state.posts.filter((post) => post._id !== action.payload);
-      })
-      .addCase(deletePost.rejected, (state, action) => {
-        state.error = action.payload;
+
+      .addCase(fetchSinglePost.fulfilled, (s, a) => {
+        s.singlePost = a.payload;
       });
   },
 });

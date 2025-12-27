@@ -49,25 +49,35 @@ const SinglePost = () => {
         )}
 
         {status === "succeeded" && post && (
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title text-3xl">{post.title}</h2>
-              <div className="opacity-70 text-sm">
-                {post.createdAt
-                  ? new Date(post.createdAt).toLocaleString()
-                  : null}
-              </div>
-              <p className="mt-4 whitespace-pre-line">{post.content}</p>
-              <div className="card-actions justify-end mt-6">
-                <button
-                  onClick={() => navigate(-1)}
-                  className="btn btn-secondary"
-                >
-                  Back to Posts
-                </button>
+          <>
+            <div className="card-actions m-2 justify-end mt-6">
+              <button
+                onClick={() => navigate(-1)}
+                className="text-white border border-green-200 btn p-2"
+              >
+                <span>&larr; Back</span> to Posts
+              </button>
+            </div>
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title text-3xl">{post.title}</h2>
+                <div className="opacity-70 text-sm">
+                  {post.createdAt
+                    ? new Date(post.createdAt).toLocaleString()
+                    : null}
+                </div>
+                <p className="mt-4 whitespace-pre-line">{post.content}</p>
+                <div className="card-actions justify-end mt-6">
+                  <button
+                    onClick={() => navigate(-1)}
+                    className="btn btn-secondary"
+                  >
+                    Back to Posts
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -8,9 +8,10 @@ const Posts = () => {
   const navigate = useNavigate();
 
   // Redux state
-  const { posts, status, error } = useSelector((state) => state.posts);
+const { allPosts, status, error } = useSelector((state) => state.posts);
+
   const { user } = useSelector((state) => state.auth);
-  console.log("Posts in Redux state:", posts); // <-- Add this
+  console.log("Posts in Redux state:", allPosts); // <-- Add this
 // console.log("Current user:", user)
 
   // Local state for delete confirmation modal
@@ -64,22 +65,23 @@ const Posts = () => {
   }
 
   // Sort posts by date (latest first)
-  const sortedPosts = [...posts].sort(
+  const sortedPosts = [...allPosts].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
+
 
   return (
     <div className="min-h-screen bg-base-200 p-6">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">All Posts</h2>
 
-        {posts.length === 0 && (
+        {allPosts.length === 0 && (
           <div className="alert">
             <span>No posts yet.</span>
           </div>
         )}
 
-        {posts.length > 0 && (
+        {allPosts.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedPosts.map((p) => {
               console.log("Rendering post:", p);
